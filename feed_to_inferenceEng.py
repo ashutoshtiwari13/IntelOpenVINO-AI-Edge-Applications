@@ -31,13 +31,13 @@ def load_to_IE(model_xml , cpu_ext):
     model_bin = os.path.splitext(model_xml)[0]+ ".bin"
     net= IENetwork(model=model_xml,weights = model_bin)
 
-    plugin.add_extension(cpu_text,"CPU")
+    plugin.add_extension(cpu_ext,"CPU")
 
     #Get the supported layers of the Network
-    supported_layers = plugin.query_network(neywork=net, device_name="CPU")
+    supported_layers = plugin.query_network(network=net, device_name="CPU")
 
     #check the supported layer and let teh user know if anything is missing
-    unsupported_layers= [l for l in net.layers_keys() if l not in supported_layers]
+    unsupported_layers= [l for l in net.layers.keys() if l not in supported_layers]
     if len(unsupported_layers) !=0:
         print("Unsupported layers found:{}".format(unsupported_layers))
         print("Check whether extensions are available to ass to IECore")
@@ -52,7 +52,7 @@ def load_to_IE(model_xml , cpu_ext):
 
 
 def main():
-    arg= get_args()
+    args= get_args()
     load_to_IE(args.m , args.c)
 
 if __name__ == "__main__":

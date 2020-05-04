@@ -90,8 +90,8 @@ def preprocessing(input_image, height, width):
 
 '''
 Arguments for Testing the code
-python app.py -i "images/blue-car.jpg"
-     -t "CAR_META"
+python app.py -i "images/car_type_color.jpg"
+     -t "CAR_TYPE_COLOR"
      -m "/home/workspace/models/vehicle-attributes-recognition-barrier-0039.xml"
-     -c "/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so"
+     -c "/home/leo/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so"
 '''
