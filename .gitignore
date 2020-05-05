@@ -1,4 +1,4 @@
-openvinoenv/*
-__pycache__/*
-.ipynb_checkpoints/*
+openvinoenv/
+__pycache__/
+.ipynb_checkpoints/
 .gitignore
