@@ -31,3 +31,56 @@ def get_args():
     args = parser.parse_args()
 
     return args
+
+
+def capture_stream(args):
+
+    #create a flag for singel images
+    image_flag= False
+    #chekc if input is webcam
+    if args.i= = 'CAM':
+        args.i=0
+    elif args.i.endswith('.jpg') or args.i.endswith('png') orargs.i.endswith('bmp'):
+        image_flag=True
+
+    #Get and open video capture_stream
+    cap= cv2.VideoCapture(args.i)
+    cap.open(args.i)
+
+    if not image_flag:
+        out= cv2.VideoWriter('output_video.mp4', CODEC_COMPATIBLE,30, (100,100))
+    else:
+        out=None
+
+    # Process frames until the video ends, or process is exited
+    while cap.isOpened():
+        # Read the next frame
+        flag, frame = cap.read()
+        if not flag:
+            break
+        key_pressed = cv2.waitKey(60)
+
+        # Re-size the frame to 100x100
+        frame = cv2.resize(frame, (100,100))
+
+        ## Add Canny Edge Detection to the frame,
+        ##      with min & max values of 100 and 200
+
+        frame = cv2.Canny(frame, 100, 200)
+        #To make a 3-channel image
+        frame = np.dstack((frame, frame, frame))
+
+        ### Write out the frame, depending on image or video
+        if image_flag:
+            cv2.imwrite('output_image.jpg', frame)
+        else:
+            out.write(frame)
+        # Break if escape key pressed
+        if key_pressed == 27:
+            break
+
+    #Close the stream and any windows at the end of the application
+    if not image_flag:
+        out.release()
+    cap.release()
+    cv2.destroyAllWindows()
