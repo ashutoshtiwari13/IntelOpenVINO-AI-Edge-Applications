@@ -5,14 +5,18 @@ Uses routines already implemented in Inference requets and ../app.py with tweaks
 import argparse
 import cv2
 from inference import Network
-from sys import platform
+import sys
 import numpy as np
 import socket
 import json
 from random import randint
 
+#import mqtt libraries
+import paho.mqtt.client as mqtt
+
 
 INPUT_STREAM = "test_video.mp4"
+ADAS_MODEL = "/home/workspace/models/semantic-segmentation-adas-0001.xml"
 # Get correct CPU extension
 if platform == "linux" or platform == "linux2":
     CPU_EXTENSION = "/home/leo/intel/openvino/deployment_tools/inference_engine/lib/intel64/libcpu_extension_sse4.so"
@@ -25,30 +29,28 @@ else:
     print("Unsupported OS.")
     exit(1)
 
+CLASSES = ['road','sidewalk','building','wall','fence','pole','traffic_light','traffic_sign','vegetation','terrain','sky','person','rider','car','truck','bus','train','motorcycle','bicycle','ego-vehicle']
+
+#MQTT server env variables
+HOSTNAME = socket.gethostname()
+IPADDRESS = socket.gethostbyname(HOSTNAME)
+MQTT_POST= IPADDRESS
+MQTT_PORT= 1883         #3001 could be used
+MQTT_KEEPALIVE_INTERVAL = 60
+
+
 def get_args():
     '''
     Gets the arguments from the command line.
     '''
     parser = argparse.ArgumentParser("Run inference on an input video")
     # -- Create the descriptions for the commands
-    m_desc = "Model XML file location"
     i_desc = "Input file location"
     d_desc = "The device name if not 'CPU'"
-    cb_desc= "The color of bounding box to draw ;RED,GREEN , BLUE"
-    ct_desc= "Confidence Threshold to use with the bounding boxes"
-
-    # -- Add required and optional groups
-    parser._action_groups.pop()
-    required = parser.add_argument_group('required arguments')
-    optional = parser.add_argument_group('optional arguments')
 
     # -- Create the arguments
-    required.add_argument("-m", help=m_desc, required=True)
-    optional.add_argument("-i", help=i_desc, default=INPUT_STREAM)
-    optional.add_argument("-d", help=d_desc, default='CPU')
-    optional.add_argument("-cb",help= cb_desc,default='BLUE')
-    optional.add_argument("-ct",help= ct_desc,default=0.6)
-
+    parser.add_argument("-i", help=i_desc, default=INPUT_STREAM)
+    parser.add_argument("-d", help=d_desc, default='CPU')
     args = parser.parse_args()
 
     return args
