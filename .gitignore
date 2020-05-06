@@ -2,3 +2,5 @@ openvinoenv/
 __pycache__/
 .ipynb_checkpoints/
 .gitignore
+ssd*/
+ssd_mobilenet_v2_coco_2018_03_29/

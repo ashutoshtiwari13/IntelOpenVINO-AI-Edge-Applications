@@ -85,4 +85,11 @@ def main():
 
 
 if __name__=="__main__":
-    main()    
+    main()
+
+
+'''
+run:
+python testing_requests.py
+Pending : test the output on a testing_requests file
+'''
