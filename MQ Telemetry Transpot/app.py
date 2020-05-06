@@ -55,6 +55,9 @@ def get_args():
 
     return args
 
+
+
+
 def convert_color(color_string):
     '''
     '''
@@ -66,27 +69,51 @@ def convert_color(color_string):
         return colors['BLUE']
 
 
-def draw_boxes(frame, result, args, width, height):
+# def draw_boxes(frame, result, args, width, height):
+#     '''
+#     Draw bounding boxes onto the frame.
+#     '''
+#     for box in result[0][0]: # Output shape is 1x1x100x7
+#         conf = box[2]
+#         if conf >= args.ct:
+#             xmin = int(box[3] * width)
+#             ymin = int(box[4] * height)
+#             xmax = int(box[5] * width)
+#             ymax = int(box[6] * height)
+#             cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 0, 255), 1)
+#     return frame
+
+def draw_masks(result,width,height):
     '''
-    Draw bounding boxes onto the frame.
+    Drawa semantic masks of the classes on to the frame
     '''
-    for box in result[0][0]: # Output shape is 1x1x100x7
-        conf = box[2]
-        if conf >= args.ct:
-            xmin = int(box[3] * width)
-            ymin = int(box[4] * height)
-            xmax = int(box[5] * width)
-            ymax = int(box[6] * height)
-            cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 0, 255), 1)
-    return frame
+    classes =cv2.resize(result[0].transpose((1,2,0)),(width,height), interpolation =cv2.INTER_NEAREST)
+    unique_classes =np.unique(classes)
+    out_mask = classes * (255/20)
+
+    #stack the mask so ffmpeg understans it
+    out_mask = np.dstack((out_mask,out_mask,out_mask))
+    out_mask = np.uint8(out_mask)
+
+    return out_mask ,unique_classes
+    
+
+def get_class_names(class_nums):
+    class_names= []
+    for i in class_nums:
+        class_names.append(CLASSES[int(i)])
+    return class_names
 
 
-def infer_on_video(args):
-    #convert the args for color and inference
-    args.c= convert_color(args.cb)
-    args.ct =float(args.ct)
 
-    ### TODO: Initialize the Inference Engine
+def infer_on_video(args,model):
+
+    # Connect to the MQTT server
+    client= mqtt.client()
+    client.Connect(MQTT_HOST,MQTT_PORT,MQTT_KEEPALIVE_INTERVAL)
+
+
+    #Initialize the Inference Engine
     plugin = Network()
 
     ### TODO: Load the network model into the IE
@@ -100,12 +127,6 @@ def infer_on_video(args):
     # Grab the shape of the input
     width = int(cap.get(3))
     height = int(cap.get(4))
-
-    # Create a video writer for the output video
-    # The second argument should be `cv2.VideoWriter_fourcc('M','J','P','G')`
-    # on Mac, and `0x00000021` on Linux
-    #fourcc= cv2.VideoWriter_fourcc('M','J','P','G')
-    out = cv2.VideoWriter('out.mp4', CODEC_COMPATIBLE , 30, (width,height))
 
     # Process frames until the video ends, or process is exited
     while cap.isOpened():
@@ -126,29 +147,34 @@ def infer_on_video(args):
         # Get the output of inference
         if plugin.wait() == 0:
             result = plugin.extract_output()
-            ### TODO: Update the frame to include detected bounding boxes
-            frame = draw_boxes(frame, result, args, width, height)
-            # Write out the frame
-            out.write(frame)
+            ## Draw the output mask onto the input
+            out_frame, classes = draw_masks(result,width,height)
+            class_names =get_class_names(classes)
+            speed =randint(50,70)
+
+            #Sedning the class  names , speed details to the mqtt server
+            client.publish("class",json.dumps({"class_names":class_names}))
+            client.publish("seedometer",json.dumps({"speed" :speed}))
+
+
+
+        #send frame to the concerned server ,say, ffmpeg server here
+        sys.stdout.buffer.write(out_frame)
+        sys.stdout.flush()
 
         # Break if escape key pressed
         if key_pressed == 27:
             break
 
-    # Release the out writer, capture, and destroy any OpenCV windows
-    out.release()
+    # Release the capture, and destroy any OpenCV windows and disconnect form MQTT
     cap.release()
     cv2.destroyAllWindows()
-
+    client.disconnect()
 
 def main():
     args = get_args()
-    infer_on_video(args)
-
-'''
-Command to run :
-python app.py -m "/home/workspace/models/frozen_inference_graph.xml" -cb "GREEN" -ct 0.6
-'''
+    model =ADAS_MODEL
+    infer_on_video(args,model)
 
 if __name__ == "__main__":
     main()

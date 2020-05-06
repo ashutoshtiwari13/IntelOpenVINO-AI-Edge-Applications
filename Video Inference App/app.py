@@ -79,10 +79,10 @@ def infer_on_video(args):
     args.c= convert_color(args.cb)
     args.ct =float(args.ct)
 
-    ### TODO: Initialize the Inference Engine
+    # Initialize the Inference Engine
     plugin = Network()
 
-    ### TODO: Load the network model into the IE
+    ## Load the network model into the IE
     plugin.load_model(args.m, args.d, CPU_EXTENSION)
     net_input_shape = plugin.get_input_shape()
 
