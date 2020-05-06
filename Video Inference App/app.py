@@ -141,9 +141,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-'''
-Command to run :
-python app.py -m "/home/workspace/models/frozen_inference_graph.xml" -cb "GREEN" -ct 0.6
-'''
