@@ -138,6 +138,10 @@ def main():
     args = get_args()
     infer_on_video(args)
 
+'''
+Command to run :
+python app.py -m "/home/workspace/models/frozen_inference_graph.xml" -cb "GREEN" -ct 0.6
+'''
 
 if __name__ == "__main__":
     main()
