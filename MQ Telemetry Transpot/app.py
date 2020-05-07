@@ -6,6 +6,7 @@ import argparse
 import cv2
 from inference import Network
 import sys
+from sys import platform
 import numpy as np
 import socket
 import json
@@ -34,8 +35,8 @@ CLASSES = ['road','sidewalk','building','wall','fence','pole','traffic_light','t
 #MQTT server env variables
 HOSTNAME = socket.gethostname()
 IPADDRESS = socket.gethostbyname(HOSTNAME)
-MQTT_POST= IPADDRESS
-MQTT_PORT= 1883         #3001 could be used
+MQTT_HOST= IPADDRESS
+MQTT_PORT= 1883        #3001 could be used
 MQTT_KEEPALIVE_INTERVAL = 60
 
 
@@ -96,7 +97,7 @@ def draw_masks(result,width,height):
     out_mask = np.uint8(out_mask)
 
     return out_mask ,unique_classes
-    
+
 
 def get_class_names(class_nums):
     class_names= []
@@ -109,15 +110,15 @@ def get_class_names(class_nums):
 def infer_on_video(args,model):
 
     # Connect to the MQTT server
-    client= mqtt.client()
-    client.Connect(MQTT_HOST,MQTT_PORT,MQTT_KEEPALIVE_INTERVAL)
+    client= mqtt.Client()
+    client.connect(MQTT_HOST,MQTT_PORT,MQTT_KEEPALIVE_INTERVAL)
 
 
     #Initialize the Inference Engine
     plugin = Network()
 
-    ### TODO: Load the network model into the IE
-    plugin.load_model(args.m, args.d, CPU_EXTENSION)
+    ## Load the network model into the IE
+    plugin.load_model(model, args.d, CPU_EXTENSION)
     net_input_shape = plugin.get_input_shape()
 
     # Get and open video capture
