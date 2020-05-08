@@ -36,7 +36,7 @@ CLASSES = ['road','sidewalk','building','wall','fence','pole','traffic_light','t
 HOSTNAME = socket.gethostname()
 IPADDRESS = socket.gethostbyname(HOSTNAME)
 MQTT_HOST= IPADDRESS
-MQTT_PORT= 1883        #3001 could be used
+MQTT_PORT= 3002       #3001 could be used
 MQTT_KEEPALIVE_INTERVAL = 60
 
 
